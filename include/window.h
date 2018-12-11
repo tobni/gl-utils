@@ -4,8 +4,8 @@
 #include <tuple>
 #include <optional>
 
-template<class T> 
-using owner = T*;
+#include "owner.h"
+
 
 class Window {
     owner<GLFWwindow> window_reference;
@@ -14,11 +14,13 @@ class Window {
 
     std::optional<InputManager> input_manager;
 
-    // Window screen size
+    // Window properties
     int width() const;
     int height() const;
     std::tuple<int, int> size() const;
     void set_size(int width, int height);
+    
+    void set_title(std::string const& title);
 
     // Framebuffer size
     int framebuffer_width() const;

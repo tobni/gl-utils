@@ -31,11 +31,14 @@ int Window::height() const {
     return std::get<1>(size());
 }
 
-
 std::tuple<int, int> Window::framebuffer_size() const {
     int width, height;
     glfwGetFramebufferSize(window_reference ,&width, &height);
     return { width, height };
+}
+
+void Window::set_title(std::string const& title) {
+    glfwSetWindowTitle(window_reference, title.c_str());
 }
 
 int Window::framebuffer_width() const {
@@ -48,6 +51,7 @@ int Window::framebuffer_height() const {
 
 void Window::attach(InputManager&& input_manager) {
     this->input_manager = input_manager;
+    this->input_manager->setup(window_reference);
 }
 
 bool Window::should_close() {
@@ -64,7 +68,9 @@ void Window::poll() {
 }
 
 Window::Window(owner<GLFWwindow> window_reference)
-    : window_reference{window_reference} {
+    : window_reference{window_reference} 
+{
+    glfwSetWindowUserPointer(window_reference, this);
 }
 
 Window::Window(Window&& other)     

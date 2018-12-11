@@ -26,6 +26,7 @@ add_library(gl-utils
 # Alias for testing
 add_library(gl-utils::gl-utils ALIAS gl-utils)
 
+target_compile_options (gl-utils PRIVATE "-Wall" "-Werror" )
 # Target Properties
 
 target_include_directories(gl-utils

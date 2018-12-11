@@ -1,7 +1,5 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
 #include <map>
@@ -49,6 +47,6 @@ class InputManager {
     InputManager() = default;
 
     void add_input(KeyPattern pattern, KeyCallback&& callback);
-    void press_key(std::optional<int> key, std::optional<int> scancode, std::optional<int> action, std::optional<int> mods);
-    
+    void press_key(std::optional<int> key, std::optional<int> scancode, std::optional<int> action, std::optional<int> mods) const;
+    void setup(GLFWwindow * window_reference);
 };
