@@ -1,4 +1,4 @@
-#include "../include/window.hpp"
+#include "../include/window.h"
 
 std::optional<Window> make_window(int width, int height, const std::string& name) {
     if (glfwInit()) {

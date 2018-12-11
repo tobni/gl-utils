@@ -1,4 +1,4 @@
-#include "../include/input-manager.hpp"
+#include "../include/input-manager.h"
 
 
 bool KeyPattern::operator==(KeyPattern const& other) const {

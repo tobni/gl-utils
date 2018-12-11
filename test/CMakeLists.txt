@@ -1,8 +1,8 @@
 set(SOURCES
-	"test-gl-utils.cpp"
+	"test-gl-utils.cc"
 )
 
-add_executable(test-main test-main.cpp ${SOURCES})
+add_executable(test-main test-main.cc ${SOURCES})
 
 target_link_libraries(test-main
 	PRIVATE

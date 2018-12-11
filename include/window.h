@@ -1,13 +1,8 @@
 #pragma once
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GLFW/glfw3.h>
+#include "../include/input-manager.h"
 
 #include <tuple>
 #include <optional>
-
-#include "../include/input-manager.hpp"
 
 template<class T> 
 using owner = T*;

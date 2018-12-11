@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include "../include/gl-utils.hpp"
+#include "../include/gl-utils.h"
 #include <iostream>
 
 using std::move;
