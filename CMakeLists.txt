@@ -1,0 +1,45 @@
+cmake_minimum_required (VERSION 3.12)
+
+# VCPKG manager
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      CACHE STRING "")
+endif()
+
+# Project setup
+project (gl-utils LANGUAGES CXX VERSION 0.0.1)
+set (CMAKE_CXX_STANDARD 17)
+
+##############################################
+# Dependencies
+find_package(OpenGL REQUIRED COMPONENTS OpenGL)
+find_package(GLEW REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(Catch2 REQUIRED)
+
+##############################################
+
+add_library(gl-utils 
+	src/window.cpp
+	src/input-manager.cpp
+)
+# Alias for testing
+add_library(gl-utils::gl-utils ALIAS gl-utils)
+
+# Target Properties
+
+target_include_directories(gl-utils
+	PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_link_libraries(gl-utils
+	PRIVATE 
+		OpenGL::OpenGL
+		GLEW::GLEW
+		glfw
+)
+
+# Testing
+enable_testing()
+add_subdirectory(test)
