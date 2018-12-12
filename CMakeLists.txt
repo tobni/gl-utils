@@ -16,7 +16,8 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(Catch2 REQUIRED)
-
+find_path(GSL_INCLUDE_DIR gsl/gsl_util)
+include_directories(${GSL_INCLUDE_DIR})
 ##############################################
 
 add_library(gl-utils 
@@ -28,12 +29,10 @@ add_library(gl-utils::gl-utils ALIAS gl-utils)
 
 target_compile_options (gl-utils PRIVATE "-Wall" "-Werror" )
 # Target Properties
-
 target_include_directories(gl-utils
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-
 target_link_libraries(gl-utils
 	PRIVATE 
 		OpenGL::OpenGL

@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 #include "../include/gl-utils.h"
 #include <iostream>
-
+#include <vector>
 using std::move;
 
 TEST_CASE( "Testing window factory function", "[window]" ) {
@@ -25,7 +25,7 @@ TEST_CASE( "Testing window factory function", "[window]" ) {
 }
 
 
-TEST_CASE( "Testing Input Manager key events", "[InputManager]" ) {
+TEST_CASE( "Testing Input Manager key events", "[input-manager]" ) {
     
     auto window = *make_window(600, 450, "Hello Input");
     
@@ -75,4 +75,16 @@ TEST_CASE( "Testing Input Manager key events", "[InputManager]" ) {
         }
         REQUIRE(window.should_close());
     }
+}
+
+TEST_CASE( "Testing VAO/VBO creaton", "[vertex-array-object]" ) {
+    // For the context
+    auto window_option = make_window(600, 450, "Hello Factory");
+    glewInit();
+    //-----
+
+    VertexArrayObject vao{};
+    std::vector<GLfloat> array{0.1, 0.2, 0.3};
+    vao.add_buffer(gsl::span(array.data(), array.size()), 1, "data");
+    vao.print_buffers();
 }
