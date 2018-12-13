@@ -1,5 +1,7 @@
 set(SOURCES
-	"test-gl-utils.cc"
+	"test-input-manager.cc"
+	"test-vertex-array-object.cc"
+	"test-window.cc"
 )
 
 add_executable(test-main test-main.cc ${SOURCES})

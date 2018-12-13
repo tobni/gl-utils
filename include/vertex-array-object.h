@@ -1,101 +1,75 @@
 #pragma once
 #include <GL/glew.h>
 
-#include <map>
 #include <gsl/span>
-#include <tuple>
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include <utility>
+#include <optional>
+
+#include "../include/common.h"
 
 class VertexArrayObject {
 
     struct VertexBufferObject {
 
         template<typename T>
-        void init_buffer(gsl::span<T> data, GLint components, VertexArrayObject*const vertex_array_object) {
-            glBindVertexArray(vertex_array_object->id);
-            glGenBuffers(1, &id);
-            glBindBuffer(GL_ARRAY_BUFFER, id);
+        VertexBufferObject(gsl::span<T> data, GLint components)
+            : id{generate_and_bind()}, components{components}
+        {
             glBufferData(GL_ARRAY_BUFFER, data.size_bytes(), data.data(), GL_STATIC_DRAW);
         }
 
-        ~VertexBufferObject() {
-            glDeleteBuffers(1, &id);
+        GLuint generate_and_bind() const {
+            GLuint new_id;
+            glGenBuffers(1, &new_id);
+            glBindBuffer(GL_ARRAY_BUFFER, new_id);
+            return new_id;
         }
 
+        ~VertexBufferObject() {
+            std::cout << "Removing buffer " << id << std::endl; 
+            glDeleteBuffers(1, &id);
+        }
+        
+        GLuint get_id() const {
+            return id;
+        }
         private:
-        GLuint id = 0;
+        GLuint const id;
+        GLint components;
     };
 
-    GLuint id = 0;
-    GLuint index_buffer_id = 0;
+    GLuint id;
+    GLuint index_buffer_id;
 
-    template<typename T>
-    struct Less{
+    RefMap<std::string const, VertexBufferObject> vertex_buffer_objects;
 
-    bool operator()(T const& lhs, T const& rhs) const 
-    {
-        return lhs<rhs;
-    }
-    };
-
-    std::map<std::reference_wrapper<std::string const>, VertexBufferObject, Less<std::string>> vertex_buffer_objects;
-    
+    GLuint generate_id() const;     
     public:
 
-    VertexArrayObject() {
-        glGenVertexArrays(1, &id);
-    }
+    VertexArrayObject();
+    VertexArrayObject(VertexArrayObject&& other);
+    ~VertexArrayObject();
 
     VertexArrayObject(VertexArrayObject const&) = delete;
-    VertexArrayObject(VertexArrayObject&& other)
-        : id{other.id}, index_buffer_id{other.index_buffer_id}, vertex_buffer_objects{std::move(other.vertex_buffer_objects)}
-    {
-        other.id = 0;
-        other.index_buffer_id = 0;
-    }
-    
-    ~VertexArrayObject() {
-        remove_index_buffer();
-        glDeleteVertexArrays(1, &id);
-    }
 
     template<typename T>
     void add_buffer(gsl::span<T> data, GLint components, std::string const& name) {
-        vertex_buffer_objects.emplace(std::cref(name), VertexBufferObject());
-        vertex_buffer_objects[std::cref(name)].init_buffer(data, components, this);
-    }
-
-    void add_index_buffer(gsl::span<GLuint> data) {
         glBindVertexArray(id);
-        glGenBuffers(1, &index_buffer_id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size_bytes(), data.data(), GL_STATIC_DRAW);
+        vertex_buffer_objects.try_emplace(name, data, components);
+        //glVertexAttribPointer
     }
 
-    void remove_buffer(std::string const& name) {
-        vertex_buffer_objects.erase(std::cref(name));
-    }
+    void add_index_buffer(gsl::span<GLuint> data);
 
-    void remove_index_buffer() {
-        glDeleteBuffers(1, &index_buffer_id);
-    }
+    void remove_buffer(std::string const& name);
 
-    GLuint const get_id() {
-        return id;
-    }
+    void remove_index_buffer();
 
-    friend std::ostream& operator<<(std::ostream& os, const VertexArrayObject& vao) {
-        os << "id=" << vao.id << " buffers= [";
-        char const* separator = "";
-        for (auto const& kv : vao.vertex_buffer_objects) {
-            auto const& name = kv.first; 
-            os << separator << name.get();
-            separator = ", ";
-        }
-        os << "]";
-        return os;
-    }
+    GLuint get_id() const;
+
+    std::optional<GLuint> get_buffer_id(std::string const& name) const;
+
+    friend std::ostream& operator<<(std::ostream& os, const VertexArrayObject& vao);
 };

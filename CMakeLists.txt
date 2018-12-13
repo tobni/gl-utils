@@ -8,7 +8,7 @@ endif()
 
 # Project setup
 project (gl-utils LANGUAGES CXX VERSION 0.0.1)
-set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD 17)
 
 ##############################################
 # Dependencies
@@ -23,11 +23,12 @@ include_directories(${GSL_INCLUDE_DIR})
 add_library(gl-utils 
 	src/window.cc
 	src/input-manager.cc
+	src/vertex-array-object.cc
 )
 # Alias for testing
 add_library(gl-utils::gl-utils ALIAS gl-utils)
 
-target_compile_options (gl-utils PRIVATE "-Wall" "-Werror" )
+target_compile_options (gl-utils PRIVATE "-Wall" "-Werror" "-pedantic" "-Wextra" )
 # Target Properties
 target_include_directories(gl-utils
 	PUBLIC

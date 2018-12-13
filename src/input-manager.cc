@@ -35,7 +35,7 @@ void InputManager::press_key(std::optional<int> key, std::optional<int> scancode
 void InputManager::setup(GLFWwindow * window_reference) {
     glfwSetKeyCallback(
         window_reference, 
-        [] (GLFWwindow* glfw_window, int key, int scancode, int action, int mods) {
+        [] (GLFWwindow* glfw_window, int key, int /*scancode*/, int /*action*/, int /*mods*/) {
             auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
             window->input_manager->press_key(key, {}, {}, {});
         });
