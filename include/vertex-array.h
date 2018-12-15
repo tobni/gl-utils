@@ -1,42 +1,37 @@
 #pragma once
 #include <GL/glew.h>
-
 #include <gsl/span>
-#include <string>
+#include <memory>
 #include <iostream>
-#include <algorithm>
-#include <optional>
-
-#include "../include/common.h"
 
 class VertexArray {
-    int id;
-    uint index_buffer_id;
 
-    GLuint generate_id() const;     
-    public:
+    std::shared_ptr<uint const> id;
 
-    VertexArray();
-    VertexArray(VertexArray&& other);
-    VertexArray(VertexArray const& other);
-    ~VertexArray();
-
-    template<typename T>
-    void add_buffer(gsl::span<T> data, GLint components, std::string const& name) {
-        glBindVertexArray(id);
-        vertex_buffer_objects.try_emplace(name, data, components);
-        //glVertexAttribPointer
+    uint generate() const {
+        uint new_id;
+        glGenVertexArrays(1, &new_id);
+        return new_id;
     }
 
-    void add_index_buffer(gsl::span<GLuint> data);
+    public:
 
-    void remove_buffer(std::string const& name);
+    VertexArray(): id{std::make_shared<uint>(generate())} { }
 
-    void remove_index_buffer();
+    ~VertexArray() {
+        std::cout << " " << id.use_count() << std::endl;
+        if (id.use_count() == 1) {
+            glDeleteVertexArrays(1, id.get());
+        }
+    }
 
-    GLuint get_id() const;
+    void attrib_pointer(uint index, int size, GLenum type, bool normalized, size_t stride, void const* offset);
 
-    std::optional<GLuint> get_buffer_id(std::string const& name) const;
+    void bind() {
+        glBindVertexArray(*id);
+    }
 
-    friend std::ostream& operator<<(std::ostream& os, const VertexArray& vao);
+    uint get_id() const {
+        return *id;
+    }
 };

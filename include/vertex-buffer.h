@@ -1,39 +1,39 @@
 #pragma once
 #include <GL/glew.h>
 #include <gsl/span>
-#include <iostream>
-#include <common.h>
+#include <memory>
 
-struct VertexBuffer {
+class VertexBuffer {
 
-    VertexBuffer(): name_reference{generate()} {}
-
-    template<typename T>
-    void data(gsl::span<T> data, GLenum target = GL_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW) const {
-        bind(target);
-        glBufferData(target, data.size_bytes(), data.data(), usage);
-    }
+    std::shared_ptr<uint const> id;
 
     uint generate() const {
-        uint new_name;
-        glGenBuffers(1, &new_name);
-        return new_name;
-    }
-
-    void bind(GLenum target = GL_ARRAY_BUFFER) const {
-        glBindBuffer(target, name_reference);
-    }
-
-    ~VertexBuffer() {
-        if (name_reference.use_count() == 1) {
-            glDeleteBuffers(1, name_reference);
-        }
+        uint new_id;
+        glGenBuffers(1, &new_id);
+        return new_id;
     }
     
-    uint get_id() const {
-        return *name_reference;
+    public:
+
+    VertexBuffer(): id{std::make_shared(generate())} { }
+
+    ~VertexBuffer() {
+        if (id.use_count() == 1) {
+            glDeleteBuffers(1, id.get());
+        }
     }
 
-    private:
-    RefCnt<uint const> name_reference;
+    template<GLenum usage = GL_STATIC_DRAW, typename T>
+    void data(gsl::span<T> data) const {
+        glBufferData(GL_ARRAY_BUFFER, data.size_bytes(), data.data(), usage);
+    }
+
+    void bind() const {
+        glBindBuffer(GL_ARRAY_BUFFER, id.get());
+    }
+
+    uint get_id() const {
+        return *id;
+    }
+
 };

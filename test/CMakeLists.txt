@@ -1,6 +1,6 @@
 set(SOURCES
 	"test-input-manager.cc"
-	"test-vertex-array-object.cc"
+	"test-vertex-array.cc"
 	"test-window.cc"
 )
 

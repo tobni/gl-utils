@@ -23,7 +23,6 @@ include_directories(${GSL_INCLUDE_DIR})
 add_library(gl-utils 
 	src/window.cc
 	src/input-manager.cc
-	src/vertex-array-object.cc
 )
 # Alias for testing
 add_library(gl-utils::gl-utils ALIAS gl-utils)

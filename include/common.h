@@ -7,10 +7,6 @@
 template<class T> 
 using owner = T*;
 
-// Reference counted wrapper of shared_pointer, too verbose imo
-template<class T>
-using RefCnt = std::shared_pointer<T>;
-
 
 // RefMap, a map with a reference_wrapped key value.
 template<typename T>
