@@ -12,10 +12,12 @@ class VertexBuffer {
         glGenBuffers(1, &new_id);
         return new_id;
     }
+
+    size_t data_size; 
     
     public:
 
-    VertexBuffer(): id{std::make_shared(generate())} { }
+    VertexBuffer(): id{std::make_shared<uint>(generate())} { }
 
     ~VertexBuffer() {
         if (id.use_count() == 1) {
@@ -24,16 +26,21 @@ class VertexBuffer {
     }
 
     template<GLenum usage = GL_STATIC_DRAW, typename T>
-    void data(gsl::span<T> data) const {
-        glBufferData(GL_ARRAY_BUFFER, data.size_bytes(), data.data(), usage);
+    void data(gsl::span<T> data){
+        glNamedBufferData(*id, data.size_bytes(), data.data(), usage);
+        data_size = sizeof(T);
     }
 
-    void bind() const {
-        glBindBuffer(GL_ARRAY_BUFFER, id.get());
+    void bind(uint binding_index) const {
+        glBindVertexBuffer(binding_index, *id, 0L, data_size);
     }
 
     uint get_id() const {
         return *id;
+    }
+
+    size_t get_data_size() const {
+        return data_size;
     }
 
 };

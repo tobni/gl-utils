@@ -1,7 +1,9 @@
 set(SOURCES
 	"test-input-manager.cc"
 	"test-vertex-array.cc"
+	"test-vertex-buffer.cc"
 	"test-window.cc"
+	"test-matrix.cc"
 )
 
 add_executable(test-main test-main.cc ${SOURCES})

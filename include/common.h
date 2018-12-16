@@ -11,7 +11,6 @@ using owner = T*;
 // RefMap, a map with a reference_wrapped key value.
 template<typename T>
 struct Less{
-
     bool operator()(T const& lhs, T const& rhs) const 
     {
         return lhs<rhs;
