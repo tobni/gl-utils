@@ -5,6 +5,9 @@
 #include <tuple>
 #include <type_traits>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
+#include <iostream>
 
 
 template<size_t m, size_t n, typename Scalar = float>
@@ -16,6 +19,7 @@ class Mat {
 
     public:
 
+    // Constructors
     Mat() : elements{} {
         std::fill(elements, elements + m*n, static_cast<Scalar>(0));
     }
@@ -23,6 +27,18 @@ class Mat {
     template<typename... Scalars>
     Mat(Scalars... scalars) : elements{static_cast<Scalar>(scalars)...} {
         static_assert(sizeof ...(Scalars) <= m*n, "Too many elements");
+    }
+
+    // Print
+    std::string print(int width = 7) {
+        std::stringstream ss;
+        for (auto i = 0; i < m; i++) {
+            for(auto j = 0; j < n; j++) {
+                ss << std::right << std::setw(width) << (*this)(i,j);
+            }
+            ss << std::endl; 
+        }
+        return ss.str();
     }
 
     // Element access
@@ -67,16 +83,72 @@ class Mat {
     }
 
     auto decompose_PLU() const {
-        static_assert(m == n, "PLU-decomposition only implemented for square matrices");
-        Mat<m,n,Scalar> L{0}, U{*this}, P{0};
 
-        // Find pivot
-        for(auto i = 0; i < n; i++) {
+        Mat<m,n,Scalar> U{*this};
+        Mat<m,m> L{0}, P{0};
+
+        for(auto i = 0; i < m; i++) {
             P(i,i) = Scalar(1);
         }
+        
+        for(auto i=0; i < m-1; i++) {
+
+            Scalar pivot = 0;
+            size_t pivot_row = i;
+            auto p = (m < n) ? m : n;
+            for(auto j=i; j < p; j++) {
+                Scalar element = (U(j,i) < 0) ? -U(j,i) : U(j,i);
+
+                if (element > pivot) {
+                    pivot = element;
+                    pivot_row = j;
+                }
+
+            }
+
+            P.swap_rows(pivot_row, i);
+            U.swap_rows(pivot_row, i);
+            L.swap_rows(pivot_row, i);
+            for (auto j = i + 1; j < m; j++) {
+                Scalar s = (i >= n) ? 0 : -U(j,i)/U(i,i);
+                L(j,i) = -s;
+
+                for(auto k = 0; k < n; k++) {
+                    U(j,k) += s * U(i,k);
+                }
+            }
+
+        }
+        for(auto i = 0; i < m; i++) {
+            L(i,i) = Scalar(1);
+        }
+
+        P = P.transpose();
+        
         return std::make_tuple(P, L, U);
     }
+
+    auto inverse() const {
+        static_assert(m == n, "Can only invert square matrices");
+
+        auto [P, L, U] = this->decompose_PLU();
+        return P*L*U;
+    }
     
+    void swap_rows(size_t i, size_t j) {
+        using std::swap;
+        for (auto k = 0; k < n; k++) {
+            swap((*this)(i,k), (*this)(j,k));
+        }
+    }
+
+    void swap_columns(size_t i, size_t j) {
+        using std::swap;
+        for (auto k = 0; k < n; k++) {
+            swap((*this)(k,i), (*this)(k,j));
+        }
+    }
+
     // Matrix operations
     // Multiplication
     template<size_t p, typename OtherScalar>
