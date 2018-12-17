@@ -63,7 +63,18 @@ class Mat {
     }
 
     auto t() {
-        return this->transpose();
+        return transpose();
+    }
+
+    auto decompose_PLU() const {
+        static_assert(m == n, "PLU-decomposition only implemented for square matrices");
+        Mat<m,n,Scalar> L{0}, U{*this}, P{0};
+
+        // Find pivot
+        for(auto i = 0; i < n; i++) {
+            P(i,i) = Scalar(1);
+        }
+        return std::make_tuple(P, L, U);
     }
     
     // Matrix operations
