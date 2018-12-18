@@ -7,13 +7,12 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
-#include <iostream>
 
 
 template<size_t m, size_t n, typename Scalar = float>
 class Mat {
     static_assert((m > 0) && (n > 0), "Dimensions have to be larger than 0");
-    static_assert(std::is_arithmetic<Scalar>::value, "Scalar has to be arithmetic type");
+    static_assert(std::is_arithmetic_v<Scalar>, "Scalar has to be arithmetic type");
     
     Scalar elements[m*n];
 
@@ -24,13 +23,20 @@ class Mat {
         std::fill(elements, elements + m*n, static_cast<Scalar>(0));
     }
 
-    template<typename... Scalars>
+    template<typename... Scalars, std::enable_if_t<std::conjunction_v<std::is_arithmetic<Scalars>...>>...>
     Mat(Scalars... scalars) : elements{static_cast<Scalar>(scalars)...} {
         static_assert(sizeof ...(Scalars) <= m*n, "Too many elements");
     }
 
+    template<typename OtherScalar>
+    Mat(Mat<m,n,OtherScalar> const& other) {
+        for (auto i = 0; i < m*n; i++) {
+            (*this)(i) = static_cast<Scalar>(other(i));
+        }
+    }
+
     // Print
-    std::string print(int width = 7) {
+    std::string print(int width = 7) const {
         std::stringstream ss;
         for (auto i = 0; i < m; i++) {
             for(auto j = 0; j < n; j++) {
@@ -39,6 +45,11 @@ class Mat {
             ss << std::endl; 
         }
         return ss.str();
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, Mat<m,n,Scalar> const& A)
+    {
+        return os << A.print();
     }
 
     // Element access
@@ -82,58 +93,7 @@ class Mat {
         return transpose();
     }
 
-    auto decompose_PLU() const {
 
-        Mat<m,n,Scalar> U{*this};
-        Mat<m,m> L{0}, P{0};
-
-        for(auto i = 0; i < m; i++) {
-            P(i,i) = Scalar(1);
-        }
-        
-        for(auto i=0; i < m-1; i++) {
-
-            Scalar pivot = 0;
-            size_t pivot_row = i;
-            auto p = (m < n) ? m : n;
-            for(auto j=i; j < p; j++) {
-                Scalar element = (U(j,i) < 0) ? -U(j,i) : U(j,i);
-
-                if (element > pivot) {
-                    pivot = element;
-                    pivot_row = j;
-                }
-
-            }
-
-            P.swap_rows(pivot_row, i);
-            U.swap_rows(pivot_row, i);
-            L.swap_rows(pivot_row, i);
-            for (auto j = i + 1; j < m; j++) {
-                Scalar s = (i >= n) ? 0 : -U(j,i)/U(i,i);
-                L(j,i) = -s;
-
-                for(auto k = 0; k < n; k++) {
-                    U(j,k) += s * U(i,k);
-                }
-            }
-
-        }
-        for(auto i = 0; i < m; i++) {
-            L(i,i) = Scalar(1);
-        }
-
-        P = P.transpose();
-        
-        return std::make_tuple(P, L, U);
-    }
-
-    auto inverse() const {
-        static_assert(m == n, "Can only invert square matrices");
-
-        auto [P, L, U] = this->decompose_PLU();
-        return P*L*U;
-    }
     
     void swap_rows(size_t i, size_t j) {
         using std::swap;
@@ -144,7 +104,7 @@ class Mat {
 
     void swap_columns(size_t i, size_t j) {
         using std::swap;
-        for (auto k = 0; k < n; k++) {
+        for (auto k = 0; k < m; k++) {
             swap((*this)(k,i), (*this)(k,j));
         }
     }
@@ -209,7 +169,7 @@ class Mat {
 
     // Scalar operations
     // Addition
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto& operator+=(OtherScalar scalar) {
         for (auto& e : elements) {
             e += scalar;
@@ -217,7 +177,7 @@ class Mat {
         return *this;
     }
 
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto operator+(OtherScalar scalar) {
         using ResultScalar = decltype( std::declval<Scalar>() + std::declval<OtherScalar>() );
         Mat<m,n,ResultScalar> result{*this};
@@ -226,18 +186,18 @@ class Mat {
     }
     
     // Subtraction
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto& operator-=(OtherScalar scalar) {
         return *this += (-scalar);
     }
 
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto operator-(OtherScalar scalar) {
         return *this + (-scalar);
     }
 
     // Multiplication
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto& operator*=(OtherScalar scalar) {
         for(auto& e : elements) {
             e *= scalar;
@@ -245,7 +205,7 @@ class Mat {
         return *this;
     }
 
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto operator*(OtherScalar scalar) {
         using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
         Mat<m,n,ResultScalar> result{*this};
@@ -253,7 +213,7 @@ class Mat {
     }
 
     // Division
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto& operator/=(OtherScalar scalar) {
         for(auto& e : elements) {
             e /= scalar;
@@ -261,7 +221,7 @@ class Mat {
         return *this;
     }
 
-    template<typename OtherScalar, typename = typename std::enable_if<std::is_arithmetic<OtherScalar>::value>::type>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto operator/(OtherScalar scalar) {
         using ResultScalar = decltype( std::declval<Scalar>() / std::declval<OtherScalar>() );
         Mat<m,n,ResultScalar> result{*this};

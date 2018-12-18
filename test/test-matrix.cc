@@ -1,8 +1,27 @@
 #include <catch2/catch.hpp>
 #include "../include/matrix.h"
+#include "../include/algebra.h"
 #include <iostream>
 
 TEST_CASE( "Testing matrices", "[matrix]" ) {
+    
+
+    SECTION ( "Construction" ) {
+        Mat<2,2,float> mat_1{
+            0.2, 0.1,
+            0.3, 0.1
+        };
+
+        Mat<2,2,double> mat_2{mat_1};
+
+        Mat<3,3, bool> mat_4{
+            true, true
+        };
+
+        Mat<3,3,float>mat_5 {mat_4};
+        std::cout << mat_4;
+        std::cout << mat_5;
+    }
 
     SECTION( "Transpose" ) {
         Mat<2,2,bool>mat_1 {
@@ -145,7 +164,7 @@ TEST_CASE( "Testing matrices", "[matrix]" ) {
             0.0006, 3,
             5, 6};
 
-        auto [P,L,U] = mat_1.decompose_PLU();
+        auto [P,L,U] = decompose_PLU(mat_1);
 
         auto mat_2 = P*L*U;
 
@@ -160,21 +179,21 @@ TEST_CASE( "Testing matrices", "[matrix]" ) {
             345, 0.1, 34, 12,
             0, 123, 4, 0, 0.6};
 
-        auto [P3,L3,U3] = mat_3.decompose_PLU();
+        auto [P3,L3,U3] = decompose_PLU(mat_3);
 
         std::cout << "A = " << std::endl;
-        std::cout << mat_3.print(12);
+        std::cout << mat_3;
 
         std::cout << "P = " << std::endl;
-        std::cout << P3.print(12);
+        std::cout << P3;
 
 
         std::cout << "L = " << std::endl;
-        std::cout << L3.print(12);
+        std::cout << L3;
 
 
         std::cout << "U = " << std::endl;
-        std::cout << U3.print(12);
+        std::cout << U3;
 
         auto mat_4 = P3 * L3 * U3;
         CHECK(mat_3(0) == Approx( mat_4(0)));
@@ -199,7 +218,7 @@ TEST_CASE( "Testing matrices", "[matrix]" ) {
             0.02, 3, 0.003, 50,
             5, 6, 0.2, 1};
 
-        auto [P5, L5, U5] = mat_5.decompose_PLU();
+        auto [P5, L5, U5] = decompose_PLU(mat_5);
 
         auto mat_6 = P5 * L5 * U5;
         
@@ -212,19 +231,54 @@ TEST_CASE( "Testing matrices", "[matrix]" ) {
 
         auto mat_7 = mat_5.t();
 
-        auto [P7, L7, U7] = mat_7.decompose_PLU();
+        auto [P7, L7, U7] = decompose_PLU(mat_7);
 
         auto mat_8 = P7 * L7 * U7;
         
-        std::cout << "A =" << std::endl;
-        std::cout << mat_6.print(12);
+
         CHECK(mat_7(0) == Approx( mat_8(0)));
         CHECK(mat_7(1) == Approx( mat_8(1)));
         CHECK(mat_7(2) == Approx( mat_8(2)));
         CHECK(mat_7(3) == Approx( mat_8(3)));
         CHECK(mat_7(4) == Approx( mat_8(4)));
         CHECK(mat_7(5) == Approx( mat_8(5)));
-        
+
+        Mat<3,3, float> mat_9 {
+            10, -7, 0,
+            -3, 2, 6,
+            5, -1, 5};
+
+        auto [P9, L9, U9] = decompose_PLU(mat_9);
+
+        CHECK(P9(0) == Approx( 1 ));
+        CHECK(P9(1) == Approx( 0 ));
+        CHECK(P9(2) == Approx( 0 ));
+        CHECK(P9(3) == Approx( 0 ));
+        CHECK(P9(4) == Approx( 0 ));
+        CHECK(P9(5) == Approx( 1 ));
+        CHECK(P9(6) == Approx( 0 ));
+        CHECK(P9(7) == Approx( 1 ));
+        CHECK(P9(8) == Approx( 0 ));
+
+        CHECK(L9(0) == Approx( 1 ));
+        CHECK(L9(1) == Approx( 0 ));
+        CHECK(L9(2) == Approx( 0 ));
+        CHECK(L9(3) == Approx( 0.5 ));
+        CHECK(L9(4) == Approx( 1 ));
+        CHECK(L9(5) == Approx( 0 ));
+        CHECK(L9(6) == Approx( -3.f/10 ));
+        CHECK(L9(7) == Approx( -1.f/25 ));
+        CHECK(L9(8) == Approx( 1 ));
+
+        CHECK(U9(0) == Approx( 10 ));
+        CHECK(U9(1) == Approx( -7 ));
+        CHECK(U9(2) == Approx( 0 ));
+        CHECK(U9(3) == Approx( 0 ));
+        CHECK(U9(4) == Approx( 5.f/2 ));
+        CHECK(U9(5) == Approx( 5 ));
+        CHECK(U9(6) == Approx( 0 ));
+        CHECK(U9(7) == Approx( 0 ));
+        CHECK(U9(8) == Approx( 31.f/5 ));
     }
     
 }
