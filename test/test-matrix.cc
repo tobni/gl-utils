@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include "../include/matrix.h"
+#include "../include/mat.h"
 #include "../include/algebra.h"
 #include <iostream>
 
@@ -81,28 +81,16 @@ TEST_CASE( "Testing matrices", "[matrix]" ) {
         Mat<2,3,int> mat_4{
             1, 3, 5,
             4, 1, 6};
-        Mat<3,1,bool> mat_5{
-            false,
-            true,
-            false};
+        Mat<3,2,bool> mat_5{
+            false, true,
+            true, true,
+            false, true};
 
         auto mat_6 = mat_4 * mat_5;
 
         CHECK(mat_6(0,0) == 3);
         CHECK(mat_6(0,0) == 3);
 
-        Mat<2, 1, float> mat_7{
-            1.f,
-            1.f
-        };
-
-        Mat<1, 2, float> mat_8{
-            0.f, 10.f
-        };
-
-        auto number = mat_8 * mat_7;
-
-        CHECK(number == 10.f); 
     }
 
     SECTION( "Matrix addition/subtraction" ) {
@@ -159,7 +147,21 @@ TEST_CASE( "Testing matrices", "[matrix]" ) {
         CHECK(mat_8(1,1) == Approx( -0.2 ));
     }
 
-    SECTION( "LUP decomposition") {
+    SECTION( "Scalar operations") {
+        Mat<2,2,float> mat_1{
+            0,1,
+            0,1
+        };
+
+        auto mat_2 = 2 + mat_1;
+
+        CHECK( mat_2(0,0) == 2.f );
+        CHECK( mat_2(0,1) == 3.f );
+        CHECK( mat_2(1,0) == 2.f );
+        CHECK( mat_2(1,1) == 3.f );
+    }
+
+    SECTION( "PLU decomposition") {
         Mat<2,2,float> mat_1 {
             0.0006, 3,
             5, 6};

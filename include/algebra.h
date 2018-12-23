@@ -1,4 +1,5 @@
-#include "matrix.h"
+#pragma once
+#include "mat.h"
 
 template<size_t m, size_t n, typename Scalar, std::enable_if_t<std::is_floating_point_v<Scalar>>...>
 auto decompose_PLU(Mat<m,n,Scalar> const& A) {

@@ -8,10 +8,12 @@
 #include <sstream>
 #include <iomanip>
 
+#include "vec.h"
+
 
 template<size_t m, size_t n, typename Scalar = float>
 class Mat {
-    static_assert((m > 0) && (n > 0), "Dimensions have to be larger than 0");
+    static_assert((m > 1) && (n > 1), "Dimensions have to be larger than 1");
     static_assert(std::is_arithmetic_v<Scalar>, "Scalar has to be arithmetic type");
     
     Scalar elements[m*n];
@@ -93,8 +95,6 @@ class Mat {
         return transpose();
     }
 
-
-    
     void swap_rows(size_t i, size_t j) {
         using std::swap;
         for (auto k = 0; k < n; k++) {
@@ -116,7 +116,7 @@ class Mat {
         using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
         Mat<m, p, ResultScalar> result{};
 
-        for (auto i = 0; i < m; i++){
+        for (auto i = 0; i < m; i++) {
             for (auto j = 0; j < p; j++) {
                 auto sum = ResultScalar(0);
                 for (auto k = 0; k < n; k++) {
@@ -124,16 +124,42 @@ class Mat {
                 }
                 result(i, j) = sum;
             }
-
         }
-        if constexpr ((p == 1) && (m == 1)) {
-            return result(0,0);
-        } else {
-            return result;
-        }
+        return result;
     }
-    // Addition
+
     template<typename OtherScalar>
+    auto operator*(Vec<n, 1, OtherScalar> const& other) const {
+        using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
+        Vec<n, 1, ResultScalar> result{other};
+
+        for (auto i = 0; i < m; i++) {
+            auto sum = ResultScalar(0);
+            for (auto k = 0; k < n; k++) {
+                sum+= (*this)(i, k) * other(k);
+            }
+            result(i) = sum;
+        }
+        return result;
+    }
+
+    template<typename OtherScalar>
+    friend auto operator*(Vec<1, m, OtherScalar> const& vector, Mat<m,n,Scalar> const& matrix) {
+        using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
+        Vec<1, m, ResultScalar> result{vector};
+        
+        for (auto i = 0; i < m; i++) {
+            auto sum = ResultScalar(0);
+            for (auto k = 0; k < n; k++) {
+                sum+= matrix(i, k) * vector(k);
+            }
+            result(i) = sum;
+        }
+        return result;
+    }
+
+    // Addition
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto& operator+=(Mat<m, n, OtherScalar> const& other) {
         for (auto i = 0; i < m*n; i++){
             (*this)(i) += other(i);
@@ -141,7 +167,7 @@ class Mat {
         return *this;
     }
 
-    template<typename OtherScalar>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto operator+(Mat<m, n, OtherScalar> const& other) const {
         using ResultScalar = decltype( std::declval<Scalar>() + std::declval<OtherScalar>() );
         Mat<m, n, ResultScalar> result{*this};
@@ -150,7 +176,7 @@ class Mat {
     }
 
     // Subtraction
-    template<typename OtherScalar>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto& operator-=(Mat<m, n, OtherScalar> const& other) {
         for (auto i = 0; i < m*n; i++){
             (*this)(i) -= other(i);
@@ -158,7 +184,7 @@ class Mat {
         return *this;
     }
 
-    template<typename OtherScalar>
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
     auto operator-(Mat<m, n, OtherScalar> const& other) const {
         using ResultScalar = decltype( std::declval<Scalar>() + std::declval<OtherScalar>() );
         Mat<m, n, ResultScalar> result{*this};
@@ -178,11 +204,16 @@ class Mat {
     }
 
     template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
-    auto operator+(OtherScalar scalar) {
+    auto operator+(OtherScalar scalar) const {
         using ResultScalar = decltype( std::declval<Scalar>() + std::declval<OtherScalar>() );
         Mat<m,n,ResultScalar> result{*this};
 
         return result+=scalar;
+    }
+
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
+    friend auto operator+(OtherScalar scalar, Mat<m,n,Scalar> const& matrix) {
+        return matrix+scalar;
     }
     
     // Subtraction
@@ -192,8 +223,13 @@ class Mat {
     }
 
     template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
-    auto operator-(OtherScalar scalar) {
+    auto operator-(OtherScalar scalar) const {
         return *this + (-scalar);
+    }
+
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
+    friend auto operator-(OtherScalar scalar, Mat<m,n,Scalar> const& matrix) {
+        return matrix-scalar;
     }
 
     // Multiplication
@@ -206,10 +242,15 @@ class Mat {
     }
 
     template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
-    auto operator*(OtherScalar scalar) {
+    auto operator*(OtherScalar scalar) const {
         using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
         Mat<m,n,ResultScalar> result{*this};
         return result *= scalar;
+    }
+
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
+    friend auto operator*(OtherScalar scalar, Mat<m,n,Scalar> const& matrix) {
+        return matrix*scalar;
     }
 
     // Division
@@ -222,11 +263,21 @@ class Mat {
     }
 
     template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
-    auto operator/(OtherScalar scalar) {
+    auto operator/(OtherScalar scalar) const {
         using ResultScalar = decltype( std::declval<Scalar>() / std::declval<OtherScalar>() );
         Mat<m,n,ResultScalar> result{*this};
         return result /= scalar;
     }
 
+    template<typename OtherScalar, std::enable_if_t<std::is_arithmetic_v<OtherScalar>>...>
+    friend auto operator/(OtherScalar scalar, Mat<m,n,Scalar> const& matrix) {
+        using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
+        Mat<m,n,ResultScalar> result{};
 
+        for (auto i = 0; i < m*n; i++) {
+            result(i) = scalar / matrix(i);
+        }
+
+        return result;
+    }
 };
