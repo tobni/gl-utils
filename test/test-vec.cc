@@ -74,5 +74,20 @@ TEST_CASE( "", "[vec]" ) {
         };
 
         auto vec_4 = vec_3 * mat_2;
+
+        CHECK( vec_4(0) == 0 );
+        CHECK( vec_4(1) == -2 );
+
+        Mat<3,2, float> mat_3 {
+            2, 1,
+            3, 0,
+            5, 2
+        };
+
+        auto vec_5 = vec_1.transpose() * mat_3;
+
+        CHECK(vec_5(0) == 1.3f);
+        CHECK(vec_5(1) == 0.3f);
+
     }
 }

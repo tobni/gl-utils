@@ -95,6 +95,8 @@ class Mat {
         return transpose();
     }
 
+
+    
     void swap_rows(size_t i, size_t j) {
         using std::swap;
         for (auto k = 0; k < n; k++) {
@@ -131,7 +133,7 @@ class Mat {
     template<typename OtherScalar>
     auto operator*(Vec<n, 1, OtherScalar> const& other) const {
         using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
-        Vec<n, 1, ResultScalar> result{other};
+        Vec<n, 1, ResultScalar> result{};
 
         for (auto i = 0; i < m; i++) {
             auto sum = ResultScalar(0);
@@ -146,12 +148,12 @@ class Mat {
     template<typename OtherScalar>
     friend auto operator*(Vec<1, m, OtherScalar> const& vector, Mat<m,n,Scalar> const& matrix) {
         using ResultScalar = decltype( std::declval<Scalar>() * std::declval<OtherScalar>() );
-        Vec<1, m, ResultScalar> result{vector};
+        Vec<1, n, ResultScalar> result{};
         
-        for (auto i = 0; i < m; i++) {
+        for (auto i = 0; i < n; i++) {
             auto sum = ResultScalar(0);
-            for (auto k = 0; k < n; k++) {
-                sum+= matrix(i, k) * vector(k);
+            for (auto k = 0; k < m; k++) {
+                sum+= matrix(k,i) * vector(k);
             }
             result(i) = sum;
         }
