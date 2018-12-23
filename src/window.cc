@@ -2,6 +2,8 @@
 
 std::optional<Window> make_window(int width, int height, const std::string& name) {
     if (glfwInit()) {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         auto * window_reference = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
         glfwMakeContextCurrent(window_reference);
         glfwSwapInterval(1);
