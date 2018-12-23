@@ -4,6 +4,7 @@ set(SOURCES
 	"test-vertex-buffer.cc"
 	"test-window.cc"
 	"test-matrix.cc"
+	"test-vec.cc"
 )
 
 add_executable(test-main test-main.cc ${SOURCES})

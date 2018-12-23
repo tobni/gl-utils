@@ -2,6 +2,7 @@
 #include <map>
 #include <utility>
 #include <memory>
+#include <iostream>
 
 // Thin wrapper for owning pointer
 template<class T> 
