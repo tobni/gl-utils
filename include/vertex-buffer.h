@@ -26,7 +26,7 @@ class VertexBuffer {
     }
 
     template<GLenum usage = GL_STATIC_DRAW, typename T>
-    void data(gsl::span<T> data){
+    void data(gsl::span<T> data) {
         glNamedBufferData(*id, data.size_bytes(), data.data(), usage);
         data_size = sizeof(T);
     }
